@@ -30,11 +30,11 @@ $ npm run generate
 ブラウザ上で Apps Script エディタを開く
 
 ```
-$ yarn open
+$ clasp open
 ```
 
 実装した ts ファイルを元に gs ファイルを作成し、AppsScript にアップロードする
 
 ```
-$ yarn push
+$ clasp push
 ```
