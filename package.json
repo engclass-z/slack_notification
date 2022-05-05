@@ -1,0 +1,35 @@
+{
+  "name": "slack_notification",
+  "version": "1.0.0",
+  "repository": "https://github.com/engclass-z/slack_notification",
+  "author": "iroha project",
+  "license": "MIT",
+  "scripts": {
+    "generate": "clasp create --title slack_notification --rootDir src --type standalone && mv ./src/.clasp.json .",
+    "open": "clasp open",
+    "push": "clasp push",
+    "lint": "run-s lint:*",
+    "lint:ts": "eslint --fix --ext ts src",
+    "lint:prettier": "prettier --write **/*.{ts,json,md}",
+    "prepare": "husky install"
+  },
+  "lint-staged": {
+    "src/**/*.ts": "eslint --fix",
+    "*.{ts,json,md}": "prettier --write"
+  },
+  "dependencies": {
+    "@types/google-apps-script": "^1.0.46"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.21.0",
+    "@typescript-eslint/parser": "^5.21.0",
+    "eslint": "^8.14.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-import-resolver-typescript": "^2.7.1",
+    "husky": "^7.0.4",
+    "lint-staged": "^12.4.1",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^2.6.2",
+    "typescript": "^4.6.4"
+  }
+}
