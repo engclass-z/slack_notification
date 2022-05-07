@@ -2,16 +2,15 @@ function sendToSlack(fallback, fields, channel) {
   const url = '■１■';
   const data = {
     channel: channel,
-    username: 'Googleフォーム Bot', // 1: 名前
+    username: 'Googleフォーム Bot', // 名前
     attachments: [
       {
         fallback: fallback,
-        text: '■2■',
+        text: '■2■', //タイトル
         fields: fields,
-        color: 'good', // 3: 左線の色
+        color: 'good', // 左線の色
       },
     ],
-    icon_emoji: ':envelope_with_arrow:', // 2: アイコン画像
   };
   const payload = JSON.stringify(data);
   const options = {
@@ -25,7 +24,7 @@ function sendToSlack(fallback, fields, channel) {
 }
 
 function test() {
-  sendToSlack('テスト通知確認です', [], '■3■');
+  sendToSlack('テスト通知確認です', [], '■3■'); // チャンネル名
 }
 
 function responseToText(itemResponse) {
@@ -78,11 +77,11 @@ function onFormSubmit(e) {
     return {
       title: itemResponse.getItem().getTitle(),
       value: value,
-      short: false, // 4: 左右２列で表示
+      short: false, // 左右２列で表示
     };
   });
 
-  sendToSlack(fallback, fields, '■3■');
+  sendToSlack(fallback, fields, '■3■'); // チャンネル名
 }
 
 test();
