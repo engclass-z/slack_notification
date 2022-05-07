@@ -1,52 +1,88 @@
-// ここに処理を書く
-
-function sendToSlack(body, channel) {
-  const url = 'https://hooks.slack.com/services/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';
+function sendToSlack(fallback, fields, channel) {
+  const url = '■１■';
   const data = {
     channel: channel,
-    username: 'Googleフォーム Bot',
-    text: body,
-    icon_emoji: ':date: ',
+    username: 'Googleフォーム Bot', // 1: 名前
+    attachments: [
+      {
+        fallback: fallback,
+        text: '■2■',
+        fields: fields,
+        color: 'good', // 3: 左線の色
+      },
+    ],
+    icon_emoji: ':envelope_with_arrow:', // 2: アイコン画像
   };
   const payload = JSON.stringify(data);
   const options = {
     method: 'POST',
     contentType: 'application/json',
     payload: payload,
+    muteHttpExceptions: true,
   };
   const response = UrlFetchApp.fetch(url, options);
-  response;
+  Logger.log(response);
 }
 
 function test() {
-  sendToSlack('テスト通知確認です', '#class-エンジニア-03_168開発メンバー用');
+  sendToSlack('テスト通知確認です', [], '■3■');
+}
+
+function responseToText(itemResponse) {
+  switch (itemResponse.getItem().getType()) {
+    case FormApp.ItemType.CHECKBOX:
+      return itemResponse.getResponse().join('\n');
+      break;
+    case FormApp.ItemType.GRID: {
+      const gridResponses = itemResponse.getResponse();
+      return itemResponse
+        .getItem()
+        .asGridItem()
+        .getRows()
+        .map(function (rowName, index) {
+          Logger.log(rowName);
+          return rowName + ': ' + gridResponses[index];
+        })
+        .join('\n');
+      break;
+    }
+    case FormApp.ItemType.CHECKBOX_GRID: {
+      const checkboxGridResponses = itemResponse.getResponse();
+      return itemResponse
+        .getItem()
+        .asCheckboxGridItem()
+        .getRows()
+        .map(function (rowName, index) {
+          Logger.log(rowName);
+          return rowName + ': ' + checkboxGridResponses[index];
+        })
+        .join('\n');
+      break;
+    }
+    default:
+      return itemResponse.getResponse();
+  }
 }
 
 function onFormSubmit(e) {
-  const body = 'Slack通知テストフォームが来たよ！\n';
-  const itemResponse = e.response.getItemResponses();
+  const itemResponses = e.response.getItemResponses();
 
-  for (let j = 0; j < itemResponse.length; j++) {
-    const formData = itemResponse[j];
-    const title = formData.getItem().getTitle();
-    const response = formData.getResponse();
+  const fallback = itemResponses
+    .map(function (itemResponse) {
+      return itemResponse.getItem().getTitle() + ': ' + itemResponse.getResponse();
+    })
+    .join('\n');
 
-    switch (title) {
-      case '日付':
-        date = response;
-        break;
-      case '氏名':
-        names = response;
-        break;
-      case '好きな言語':
-        language = response;
-        break;
-      default:
-        break;
-    }
-  }
-  const bodyPublic = body + '日付:' + date + '\n氏名:' + names + '\n好きな言語:' + language;
-  sendToSlack(bodyPublic, '#class-エンジニア-03_168開発メンバー用');
+  const fields = itemResponses.map(function (itemResponse) {
+    const value = responseToText(itemResponse);
+    return {
+      title: itemResponse.getItem().getTitle(),
+      value: value,
+      short: false, // 4: 左右２列で表示
+    };
+  });
+
+  sendToSlack(fallback, fields, '■3■');
 }
 
 test();
