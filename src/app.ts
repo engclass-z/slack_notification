@@ -1,44 +1,55 @@
-function sendToSlack(fallback, fields, channel) {
-  const url = '■１■';
+import FormsOnFormSubmit = GoogleAppsScript.Events.FormsOnFormSubmit;
+
+const webhookUrl = 'Webhook URL'; //  Incoming Webhook の Webhook URL
+const username = '名前'; // 通知する際のユーザー名
+const mention = '<メンション先>'; // @here => <!here>, @channel => <!channel>, 個人 => <@user_id>
+const title = 'タイトル'; // 通知する際のタイトル名
+const channelName = 'チャンネル名'; // 通知させたいチャンネル名 ex) #Slack通知テスト
+
+const sendToSlack = (
+  fallback: string,
+  fields: { title: string; value: any; short: boolean }[],
+  channel: string
+) => {
+  const url = webhookUrl;
   const data = {
     channel: channel,
-    username: 'Googleフォーム Bot', // 名前
+    username: username,
     attachments: [
       {
         fallback: fallback,
-        text: '■2■', //タイトル
+        text: mention + '\n' + title,
         fields: fields,
         color: 'good', // 左線の色
       },
     ],
   };
-  const payload = JSON.stringify(data);
-  const options = {
-    method: 'POST',
+  const response = UrlFetchApp.fetch(url, {
+    method: 'post',
     contentType: 'application/json',
-    payload: payload,
+    payload: JSON.stringify(data),
     muteHttpExceptions: true,
-  };
-  const response = UrlFetchApp.fetch(url, options);
+  });
   Logger.log(response);
-}
+};
 
-function test() {
-  sendToSlack('テスト通知確認です', [], '■3■'); // チャンネル名
-}
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const test = () => {
+  sendToSlack('テスト通知確認です', [], channelName);
+};
 
-function responseToText(itemResponse) {
-  switch (itemResponse.getItem().getType()) {
+const responseToText = (formAnswer: any) => {
+  switch (formAnswer.getItem().getType()) {
     case FormApp.ItemType.CHECKBOX:
-      return itemResponse.getResponse().join('\n');
+      return formAnswer.getResponse().join('\n');
       break;
     case FormApp.ItemType.GRID: {
-      const gridResponses = itemResponse.getResponse();
-      return itemResponse
+      const gridResponses = formAnswer.getResponse();
+      return formAnswer
         .getItem()
         .asGridItem()
         .getRows()
-        .map(function (rowName, index) {
+        .map(function (rowName: string, index: number) {
           Logger.log(rowName);
           return rowName + ': ' + gridResponses[index];
         })
@@ -46,12 +57,12 @@ function responseToText(itemResponse) {
       break;
     }
     case FormApp.ItemType.CHECKBOX_GRID: {
-      const checkboxGridResponses = itemResponse.getResponse();
-      return itemResponse
+      const checkboxGridResponses = formAnswer.getResponse();
+      return formAnswer
         .getItem()
         .asCheckboxGridItem()
         .getRows()
-        .map(function (rowName, index) {
+        .map(function (rowName: string, index: number) {
           Logger.log(rowName);
           return rowName + ': ' + checkboxGridResponses[index];
         })
@@ -59,30 +70,28 @@ function responseToText(itemResponse) {
       break;
     }
     default:
-      return itemResponse.getResponse();
+      return formAnswer.getResponse();
   }
-}
+};
 
-function onFormSubmit(e) {
-  const itemResponses = e.response.getItemResponses();
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const onFormSubmit = (e: FormsOnFormSubmit) => {
+  const formAnswers = e.response.getItemResponses();
 
-  const fallback = itemResponses
-    .map(function (itemResponse) {
-      return itemResponse.getItem().getTitle() + ': ' + itemResponse.getResponse();
+  const fallback = formAnswers
+    .map(function (formAnswer) {
+      return formAnswer.getItem().getTitle() + ': ' + formAnswer.getResponse();
     })
     .join('\n');
 
-  const fields = itemResponses.map(function (itemResponse) {
-    const value = responseToText(itemResponse);
+  const fields = formAnswers.map(function (formAnswer) {
+    const value = responseToText(formAnswer);
     return {
-      title: itemResponse.getItem().getTitle(),
+      title: formAnswer.getItem().getTitle(),
       value: value,
       short: false, // 左右２列で表示
     };
   });
 
-  sendToSlack(fallback, fields, '■3■'); // チャンネル名
-}
-
-test();
-onFormSubmit('testtesttest');
+  sendToSlack(fallback, fields, channelName);
+};
